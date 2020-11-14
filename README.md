@@ -1,5 +1,6 @@
 # Intro to Data & Probability - Project Rubric
 
+
 **IMPORTANT: If the analysis is completed using software other than R, or not written up using R Markdown, the project should receive a 0 regardless of its content.**
 
 ### Part 1: Data (3 points)
