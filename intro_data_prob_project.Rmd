@@ -1,0 +1,135 @@
+---
+title: "Exploring the BRFSS data"
+author: "Shaohan Wang"
+date: "07/28/2020"
+output: 
+  html_document: 
+    fig_height: 4
+    highlight: pygments
+    theme: spacelab
+---
+
+## Front Matter
+
+```{r}
+# clean up workspace environment
+rm(list = ls())
+```
+
+## Setup
+
+### Load packages
+
+```{r load-packages, message = FALSE}
+library(ggplot2)
+library(dplyr)
+```
+
+### Load data
+```{r load-data}
+load("brfss2013.RData")
+```
+
+
+
+* * *
+
+## Part 1: Data
+* brfss2013 dataset has 491775 columns with 330 variables and was made for the Behavioral Risk Factor Surveillance System project. These data was collected between 2013 and 2014 to help identify the risk and behavior factors which may contibute to chronic diseases, injuries, and preventable infectious diseases which may negatively influence the adult population.
+
+* Each case here represents the detailed information and health status for each participant in a specific period. This data collection method are based on observation which means no random assignment, so it is not causal. Besides, because some interviews are only partially completed, we have non-response sampling bias here and thus, conclude that this data collection method is not generalizable.
+
+* * *
+
+## Part 2: Research questions
+
+**Research quesion 1:**
+Which state has the most partially complete interviews and which state has the fewest partially complete interviews?
+
+* This question allows us to investigate which state has the most non-response participants and which state has the fewest non-response participants. The sample data in the state with fewest non-response participants are more like to have generalizability. The variables used are: X_state, dispcode.
+
+**Research quesion 2:**
+What is the percentage of New York State people suffering from heart attack, angina or coronary Heart Disease or stroke?
+
+* Because I live in New York State, I am very interested in how many people actually suffering from cardiovascular disease in the state. The variables used are: X_state, cvdinfr4, cvdcrhd4, cvdstrk3.
+
+**Research quesion 3:**
+Do people in New York state with lower income level tend to have more number of days in relatively terrible physical and mental health? 
+
+* To my understanding, people with lower income may have a relative lower live quality which may lead to unhealthy status both physically and mentally, so I want to show this association by analyzing this dataset. Because of too many participants, I The variables used are: X_state, physhlth, menthlth, income2.
+
+
+* * *
+
+## Part 3: Exploratory data analysis
+
+NOTE: Insert code chunks as needed by clicking on the "Insert a new code chunk" 
+button (green button with orange arrow) above. Make sure that your code is visible
+in the project you submit. Delete this note when before you submit your work.
+
+**Research quesion 1:**
+
+```{r}
+# find the number of partially interviews in each state
+New_table1 <-  
+  brfss2013 %>%
+  filter(dispcode == "Partially completed interview") %>%
+  group_by(X_state) %>%
+  summarise(count_partially_interview = n()) %>%
+  arrange(desc(count_partially_interview)) 
+
+# the state with the most partially complete interviews
+New_table1 %>%
+  head(1)
+
+# the state with the fewest partially complete interviews
+New_table1 %>%
+  tail(1)
+
+# bar plot for the 5 states with lowest number of partially interviews
+New_table1 %>%
+  tail(5) %>%
+  ggplot(aes(x = reorder(X_state, -count_partially_interview), y = count_partially_interview)) +
+  geom_bar(stat = 'identity', width = 0.9, fill = 'grey60') +
+  xlab('state name')
+```
+
+* So we found that the state with most partially completed interviews is Florida and the state with the lowest is Puerto Rico. 
+
+
+**Research quesion 2:**
+
+```{r}
+# percentage of New York State people suffering from heart attack, angina or coronary Heart Disease or stroke
+brfss2013 %>%
+  filter(X_state == 'New York', cvdinfr4== 'Yes'|cvdcrhd4 == 'Yes'|cvdstrk3 == 'Yes') %>%
+  summarise(number_cardiovascular = n(),
+            percentage_of_NY_state = n()/8979) %>% # 8979 is total number of NY state participants
+  mutate(percentage_of_NY_state = round(percentage_of_NY_state, 4))
+  
+```
+* Based on this dataset, the percentage of New York participants suffering from heart attack, angina or coronary heart disease or stroke is around 9.87%.
+
+
+**Research quesion 3:**
+
+```{r}
+# find NY state data without 'na' row
+New_table2 <-
+  brfss2013 %>%
+  filter(X_state == 'New York', physhlth > 0, menthlth >0) %>%
+  select(physhlth, menthlth, income2)
+
+New_table2 <-
+  na.omit(New_table2)
+
+# visualization
+New_table2 %>%
+  ggplot(aes(x = physhlth, y = menthlth)) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  facet_wrap(income2 ~ .) +
+  ylim(0,31) # a month has 31 days at most
+```
+
+* It seems that there is no strong association between the number of days in relatively terrible health status and the participant's income level. 
