@@ -1,4 +1,4 @@
-# Intro to Data & Probability - Project Rubric
+# Intro to Data & Probability - Project Rubric (Statistics with R Specialization Coursera)
 
 ### Part 1: Data (3 points)
 - 2 pt for correct reasoning for generabizability – Answer should discuss whether random sampling was used. Learners might discuss any reservations, those should be well justified.
